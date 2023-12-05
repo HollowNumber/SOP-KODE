@@ -1,5 +1,5 @@
 mod caesar;
-mod rsa;
+pub mod rsa;
 
 pub use caesar::*;
 pub use rsa::*;
