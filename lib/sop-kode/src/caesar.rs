@@ -13,6 +13,8 @@
 /// # Example
 ///
 /// ```
+/// use sop_kode::caesar_shift;
+///
 /// let plaintext = "METTE";
 /// let alphabet = vec!["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
 ///                     "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
@@ -38,9 +40,10 @@ mod tests {
     #[test]
     fn caesar_shift_encrypts_correctly() {
         let plaintext = "HELLO";
-        let alphabet = vec!["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                            "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-                            "U", "V", "W", "X", "Y", "Z"];
+        let alphabet = vec![
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q",
+            "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+        ];
         let encrypted = caesar_shift(plaintext, 3, alphabet);
         assert_eq!(encrypted, "KHOOR");
     }
@@ -48,9 +51,10 @@ mod tests {
     #[test]
     fn caesar_shift_handles_non_alphabet_characters() {
         let plaintext = "HELLO WORLD";
-        let alphabet = vec!["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                            "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-                            "U", "V", "W", "X", "Y", "Z"];
+        let alphabet = vec![
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q",
+            "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+        ];
         let encrypted = caesar_shift(plaintext, 3, alphabet);
         assert_eq!(encrypted, "KHOORZRUOG");
     }
@@ -58,9 +62,10 @@ mod tests {
     #[test]
     fn caesar_shift_handles_empty_string() {
         let plaintext = "";
-        let alphabet = vec!["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                            "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-                            "U", "V", "W", "X", "Y", "Z"];
+        let alphabet = vec![
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q",
+            "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+        ];
         let encrypted = caesar_shift(plaintext, 3, alphabet);
         assert_eq!(encrypted, "");
     }
@@ -68,9 +73,10 @@ mod tests {
     #[test]
     fn caesar_shift_handles_zero_shift() {
         let plaintext = "HELLO";
-        let alphabet = vec!["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                            "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-                            "U", "V", "W", "X", "Y", "Z"];
+        let alphabet = vec![
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q",
+            "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+        ];
         let encrypted = caesar_shift(plaintext, 0, alphabet);
         assert_eq!(encrypted, "HELLO");
     }
