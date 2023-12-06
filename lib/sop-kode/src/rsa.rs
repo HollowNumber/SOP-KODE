@@ -1,5 +1,5 @@
-use num_bigint::{BigInt, BigUint, RandBigInt};
-use num_traits::{FromPrimitive, One, Zero};
+use num_bigint::{BigInt, BigUint, RandBigInt, Sign};
+use num_traits::{FromPrimitive, One, Zero, Signed, ToPrimitive};
 use rayon::prelude::*;
 use std::collections::HashMap;
 
@@ -20,60 +20,62 @@ use std::collections::HashMap;
 ///
 /// * A tuple (g, x, y) where g is the GCD of a and b, and x and y satisfy the equation ax + by = g.
 #[inline]
-fn binary_extended_gcd(mut a: i64, mut b: i64, x: &mut i64, y: &mut i64) -> i64 {
-    let sign_a = if a < 0 { -1 } else { 1 };
-    let sign_b = if b < 0 { -1 } else { 1 };
+fn binary_extended_gcd(mut a: &BigInt, mut b: &BigInt, x: &mut BigInt, y: &mut BigInt) -> BigInt {
+    let mut a = a.clone();
+    let mut b = b.clone();
+    let sign_a = if a.sign() == Sign::Minus { BigInt::from(-1) } else { BigInt::one() };
+    let sign_b = if b.sign() == Sign::Minus { BigInt::from(-1) } else { BigInt::one() };
 
     a = a.abs();
     b = b.abs();
 
-    let mut shift = 0;
-    let (mut u, mut v) = (a, b);
-    let (mut a1, mut b1, mut a2, mut b2) = (1, 0, 0, 1);
+    let mut shift = BigInt::zero();
+    let (mut u, mut v) = (a.clone(), b.clone());
+    let (mut a1, mut b1, mut a2, mut b2) = (BigInt::one(), BigInt::zero(), BigInt::zero(), BigInt::one());
 
-    while ((a | b) & 1) == 0 {
+    while ((&a | &b) & BigInt::one()) == BigInt::zero() {
         a >>= 1;
         b >>= 1;
         shift += 1;
     }
 
-    while u != 0 {
-        while (u & 1) == 0 {
+    while u != BigInt::zero() {
+        while (&u & BigInt::one()) == BigInt::zero() {
             u >>= 1;
-            let (next_a1, next_b1) = if (a1 | b1) & 1 == 0 {
-                (a1 >> 1, b1 >> 1)
+            let (next_a1, next_b1) = if (&a1 | &b1) & BigInt::one() == BigInt::zero() {
+                (a1.clone() >> 1, b1.clone() >> 1)
             } else {
-                ((a1 + b) >> 1, (b1 - a) >> 1)
+                ((&a1 + &b) >> 1, (&b1 - &a) >> 1)
             };
             a1 = next_a1;
             b1 = next_b1;
         }
 
-        while (v & 1) == 0 {
+        while (&v & BigInt::one()) == BigInt::zero() {
             v >>= 1;
-            let (next_a2, next_b2) = if (a2 | b2) & 1 == 0 {
-                (a2 >> 1, b2 >> 1)
+            let (next_a2, next_b2) = if (&a2 | &b2) & BigInt::one() == BigInt::zero() {
+                (a2.clone() >> 1, b2.clone() >> 1)
             } else {
-                ((a2 + b) >> 1, (b2 - a) >> 1)
+                ((&a2 + &b) >> 1, (&b2 - &a) >> 1)
             };
             a2 = next_a2;
             b2 = next_b2;
         }
 
         if u >= v {
-            u -= v;
-            a1 -= a2;
-            b1 -= b2;
+            u -= &v;
+            a1 -= a2.clone();
+            b1 -= b2.clone();
         } else {
-            v -= u;
-            a2 -= a1;
-            b2 -= b1;
+            v -= &u;
+            a2 -= a1.clone();
+            b2 -= b1.clone();
         }
     }
 
-    *x = a2 * sign_a;
-    *y = b2 * sign_b;
-    v << shift
+    *x = &a2 * &sign_a;
+    *y = &b2 * &sign_b;
+    v << shift.to_usize().unwrap()
 }
 
 /// Performs the Miller-Rabin primality test.
@@ -198,14 +200,20 @@ fn extended_gcd(a: i64, b: i64) -> (i64, i64, i64) {
 /// # Returns
 ///
 /// * The modular multiplicative inverse of a modulo m.
-pub fn mod_inverse(a: i64, m: i64) -> i64 {
-    let mut x = 0;
-    let mut y = 0;
-    let gcd = binary_extended_gcd(a, m, &mut x, &mut y);
-    if gcd == 1 {
-        ((x % m) + m) % m
+pub fn mod_inverse(a: BigInt, m: BigInt) -> BigInt {
+    let mut x = BigInt::zero();
+    let mut y = BigInt::zero();
+    let gcd = binary_extended_gcd(&a, &m, &mut x, &mut y);
+    if gcd != BigInt::one() {
+        // a and m are not coprime, return early
+        return BigInt::zero();
+    }
+    // Perform modulo operation only once
+    let result = (x % &m) + &m;
+    if result >= m {
+        result - &m
     } else {
-        0
+        result
     }
 }
 
