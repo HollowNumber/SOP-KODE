@@ -1,4 +1,4 @@
-use num_bigint::{BigInt, BigUint, RandBigInt, Sign};
+use num_bigint::{BigInt, BigUint, RandBigInt, Sign, ToBigInt};
 use num_traits::{FromPrimitive, One, Zero, Signed, ToPrimitive};
 use rayon::prelude::*;
 use std::collections::HashMap;
@@ -237,7 +237,18 @@ pub fn base_n_to_base10(digits: &Vec<i64>, base: i64) -> i64 {
     })
 }
 
-/// Chunks a message into groups of a certain size.
+pub fn calculate_chunk_size(n: &BigUint) -> usize {
+    // Get the size of n in bytes
+    let n_size = n.bits() / 8;
+
+    // Subtract a few bytes to leave room for padding
+    //let padding = 11; // For PKCS#1 v1.5 padding
+    let chunk_size = n_size;
+
+    chunk_size as usize
+}
+
+    /// Chunks a message into groups of a certain size.
 ///
 /// # Arguments
 ///
@@ -248,24 +259,60 @@ pub fn base_n_to_base10(digits: &Vec<i64>, base: i64) -> i64 {
 /// # Returns
 ///
 /// * A vector of chunks, where each chunk is a vector of integers representing the positions of the characters in the alphabet.
-fn chunk_message(
-    chars: Vec<char>,
-    chunk_size: usize,
-    alphabet_positions: &HashMap<char, i64>,
-) -> Vec<Vec<i64>> {
-    let mut nums: Vec<i64> = chars.into_iter().map(|c| alphabet_positions[&c]).collect();
+pub fn chunk_message(s: &str, chunk_size: usize) -> Vec<Vec<u8>> {
+    let mut bytes: Vec<u8> = s.chars().map(|c| c as u8).collect();
 
-    // If the number of characters is not a multiple of chunk_size, append -1 to nums
-    while nums.len() % chunk_size != 0 {
-        nums.push(-1);
+    // If the number of characters is not a multiple of chunk_size, append 0 to bytes
+    while bytes.len() % chunk_size != 0 {
+        bytes.push(0);
     }
 
-    let chunks: Vec<Vec<i64>> = nums
+    let chunks: Vec<Vec<u8>> = bytes
         .chunks(chunk_size)
         .map(|chunk| chunk.to_vec())
         .collect();
 
     chunks
+}
+
+
+pub fn encrypt_message(message: &str, public_key: (BigUint, BigUint)) -> Vec<BigUint> {
+    let (ref n, _) = public_key;
+
+    // Calculate the chunk size
+    let chunk_size = calculate_chunk_size(&n);
+
+    // Convert the string to chunks of bytes
+    let chunks = chunk_message(message, chunk_size);
+
+    // Convert each chunk of bytes to a BigUint and encrypt it
+    let encrypted_chunks: Vec<BigUint> = chunks.into_iter()
+        .map(|chunk| {
+            let chunk_biguint = BigUint::from_bytes_be(&chunk);
+            encrypt(chunk_biguint, public_key.clone())
+        })
+        .collect();
+
+    encrypted_chunks
+}
+
+pub fn decrypt_message(encrypted_message: Vec<BigUint>, private_key: (BigUint, BigUint)) -> String {
+    // Decrypt each chunk separately
+    let decrypted_chunks: Vec<Vec<u8>> = encrypted_message.into_iter()
+        .map(|chunk| {
+            let decrypted_chunk = decrypt(chunk, private_key.clone());
+            decrypted_chunk.to_bytes_be()
+        })
+        .collect();
+
+    // Concatenate the decrypted chunks together to recover the original message
+    let decrypted_message: Vec<u8> = decrypted_chunks.into_iter().flatten().collect();
+    let decrypted_message = String::from_utf8(decrypted_message).unwrap();
+
+    // Remove any trailing null characters from the decrypted message
+    let decrypted_message = decrypted_message.trim_end_matches('\0');
+
+    decrypted_message.to_string()
 }
 
 /// Calculates the totient function for two numbers.
@@ -316,4 +363,22 @@ pub fn encrypt(message: BigUint, public_key: (BigUint, BigUint)) -> BigUint {
 pub fn decrypt(ciphertext: BigUint, private_key: (BigUint, BigUint)) -> BigUint {
     let (n, d) = private_key;
     ciphertext.modpow(&d, &n)
+}
+
+
+pub fn generate_keys(bits: usize) -> Option<((BigUint, BigUint), (BigUint, BigUint))> {
+    let p = generate_prime(bits / 2);
+    let q = generate_prime(bits / 2);
+    if p == q {
+        return None;
+    }
+
+    let n = &p * &q;
+    let phi = calculate_totient(&p, &q);
+
+    let e = BigUint::from(65537u64); // Commonly used public exponent
+
+    let d = mod_inverse(e.clone().to_bigint().unwrap(), phi.to_bigint().unwrap());
+
+    Some(((n.clone(), e), (n, d.to_biguint().unwrap())))
 }
