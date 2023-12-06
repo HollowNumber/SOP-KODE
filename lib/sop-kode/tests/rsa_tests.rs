@@ -68,7 +68,7 @@ mod tests {
     fn decrypt_returns_correct_value() {
         let ciphertext = BigUint::from(13u64);
         let private_key = (BigUint::from(33u64), BigUint::from(7u64));
-        assert_eq!(decrypt(ciphertext, private_key), BigUint::from(7u64));
+        assert_eq!(decrypt(ciphertext, &private_key), BigUint::from(7u64));
     }
 
     mod chunk_message_tests {
@@ -113,7 +113,7 @@ mod tests {
             let (public_key, private_key) = generate_keys(1024).unwrap();
             let message = "Hello";
 
-            let encrypted_message = encrypt_message(message, public_key.clone());
+            let encrypted_message = encrypt_message(message, &public_key);
             let decrypted_message = decrypt_message(encrypted_message, private_key);
 
             assert_eq!(message, decrypted_message);
@@ -124,7 +124,7 @@ mod tests {
             let (public_key, private_key) = generate_keys(1024).unwrap();
             let message = "This is a very long message that exceeds the chunk size.";
 
-            let encrypted_message = encrypt_message(message, public_key.clone());
+            let encrypted_message = encrypt_message(message, &public_key);
             let decrypted_message = decrypt_message(encrypted_message, private_key);
 
             assert_eq!(message, decrypted_message);
@@ -135,7 +135,7 @@ mod tests {
             let (public_key, private_key) = generate_keys(512).unwrap();
             let message = "This is a test message.";
 
-            let encrypted_message = encrypt_message(message, public_key.clone());
+            let encrypted_message = encrypt_message(message, &public_key);
             let decrypted_message = decrypt_message(encrypted_message, private_key);
 
             assert_eq!(message, decrypted_message);
@@ -146,7 +146,7 @@ mod tests {
             let (public_key, private_key) = generate_keys(2048).unwrap();
             let message = "This is a test message.";
 
-            let encrypted_message = encrypt_message(message, public_key.clone());
+            let encrypted_message = encrypt_message(message, &public_key);
             let decrypted_message = decrypt_message(encrypted_message, private_key);
 
             assert_eq!(message, decrypted_message);
@@ -160,7 +160,7 @@ mod tests {
                    It contains many characters, words, sentences, and paragraphs, and it goes on and on and on. \
                    But despite its length, it is still just a single message, and it should be encrypted and decrypted correctly.";
 
-            let encrypted_message = encrypt_message(message, public_key.clone());
+            let encrypted_message = encrypt_message(message, &public_key);
             let decrypted_message = decrypt_message(encrypted_message, private_key);
 
             assert_eq!(message, decrypted_message);
