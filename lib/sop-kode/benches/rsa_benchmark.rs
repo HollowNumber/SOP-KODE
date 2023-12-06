@@ -1,8 +1,18 @@
+
 use num_bigint::{BigInt, BigUint};
+use num_traits::FromPrimitive;
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use num_traits::FromPrimitive;
+use lazy_static::lazy_static;
+
 use sop_kode::rsa::*;
+
+lazy_static! {
+    static ref KEYS: ((BigUint, BigUint), (BigUint, BigUint)) = generate_keys(1024).unwrap();
+    static ref ENCRYPTED_MESSAGE: Vec<BigUint> = encrypt_message(MESSAGE, KEYS.0.clone());
+}
+
+const MESSAGE: &str = "This is a test message.";
 
 fn miller_rabin_returns_true_for_prime_number(c: &mut Criterion) {
     c.bench_function("miller_rabin prime", |b| {
@@ -52,32 +62,12 @@ fn base_n_to_base10_bench(c: &mut Criterion) {
     });
 }
 
-fn encrypt_bench(c: &mut Criterion) {
-    c.bench_function("encrypt", |b| {
-        b.iter(|| {
-            let message = BigUint::from(7u64);
-            let public_key = (BigUint::from(33u64), BigUint::from(3u64));
-            encrypt(message, public_key);
-        })
-    });
-}
-
-fn decrypt_bench(c: &mut Criterion) {
-    c.bench_function("decrypt", |b| {
-        b.iter(|| {
-            let ciphertext = BigUint::from(13u64);
-            let private_key = (BigUint::from(33u64), BigUint::from(7u64));
-            decrypt(ciphertext, private_key);
-        })
-    });
-}
 
 fn encrypt_message_bench(c: &mut Criterion) {
     c.bench_function("encrypt_message", |b| {
         b.iter(|| {
-            let message = "This is a test message.";
-            let public_key = (BigUint::from(33u64), BigUint::from(3u64));
-            encrypt_message(message, public_key);
+            let (public_key, _) = KEYS.clone();
+            encrypt_message(MESSAGE, public_key);
         })
     });
 }
@@ -85,9 +75,8 @@ fn encrypt_message_bench(c: &mut Criterion) {
 fn decrypt_message_bench(c: &mut Criterion) {
     c.bench_function("decrypt_message", |b| {
         b.iter(|| {
-            let encrypted_message = vec![BigUint::from(13u64)];
-            let private_key = (BigUint::from(33u64), BigUint::from(7u64));
-            decrypt_message(encrypted_message, private_key);
+            let (_, private_key) = KEYS.clone();
+            decrypt_message(ENCRYPTED_MESSAGE.clone(), private_key);
         })
     });
 }
@@ -109,8 +98,6 @@ criterion_group! {
         generate_prime_bench,
         mod_inverse_bench,
         base_n_to_base10_bench,
-        encrypt_bench,
-        decrypt_bench,
         encrypt_message_bench,
         decrypt_message_bench,
         calculate_chunk_size_bench
