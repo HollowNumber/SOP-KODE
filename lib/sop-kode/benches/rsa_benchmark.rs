@@ -9,7 +9,7 @@ use sop_kode::rsa::*;
 
 lazy_static! {
     static ref KEYS: ((BigUint, BigUint), (BigUint, BigUint)) = generate_keys(1024).unwrap();
-    static ref ENCRYPTED_MESSAGE: Vec<BigUint> = encrypt_message(MESSAGE, KEYS.0.clone());
+    static ref ENCRYPTED_MESSAGE: Vec<BigUint> = encrypt_message(MESSAGE, &KEYS.0.clone());
 }
 
 const MESSAGE: &str = "This is a test message.";
@@ -67,7 +67,7 @@ fn encrypt_message_bench(c: &mut Criterion) {
     c.bench_function("encrypt_message", |b| {
         b.iter(|| {
             let (public_key, _) = KEYS.clone();
-            encrypt_message(MESSAGE, public_key);
+            encrypt_message(MESSAGE, &public_key);
         })
     });
 }
@@ -88,6 +88,20 @@ fn calculate_chunk_size_bench(c: &mut Criterion) {
             calculate_chunk_size(&n);
         })
     });
+}
+
+fn generate_keys_bench(c: &mut Criterion) {
+    let mut group = c.benchmark_group("generate_keys");
+    for bits in [32, 64, 128, 256, 512, 1024].iter() {
+        group.bench_with_input(
+            criterion::BenchmarkId::from_parameter(bits),
+            bits,
+            |b, &bits| {
+                b.iter(|| generate_keys(bits));
+            },
+        );
+    }
+    group.finish();
 }
 
 criterion_group! {
