@@ -44,6 +44,7 @@ mod tests {
     fn mod_inverse_returns_one_for_coprime_inputs_equal_to_one() {
         assert_eq!(mod_inverse(BigInt::from(1), BigInt::from(29)), BigInt::one());
     }
+
     #[test]
     fn base_n_to_base10_returns_correct_value_for_base_2() {
         assert_eq!(base_n_to_base10(&vec![1, 0, 1], 2), 5);
@@ -164,6 +165,55 @@ mod tests {
             let decrypted_message = decrypt_message(encrypted_message, private_key);
 
             assert_eq!(message, decrypted_message);
+        }
+    }
+
+
+    #[test]
+    fn returns_correct_estimation_for_small_n() {
+        let n = BigUint::from_u64(1024).unwrap();
+        let estimated_time = estimate_brute_force_time(&n);
+        assert!(estimated_time > 0.0);
+    }
+
+    #[test]
+    fn returns_correct_estimation_for_large_n() {
+        let n = BigUint::from_u64(1 << 20).unwrap(); // 2^20
+        let estimated_time = estimate_brute_force_time(&n);
+        assert!(estimated_time > 0.0);
+    }
+
+    mod time_format_tests {
+        use super::*;
+
+        #[test]
+        fn format_duration_returns_correct_value_for_seconds() {
+            let seconds = 45.0;
+            assert_eq!(format_duration(seconds), "45.00 seconds");
+        }
+
+        #[test]
+        fn format_duration_returns_correct_value_for_minutes() {
+            let seconds = 120.0;
+            assert_eq!(format_duration(seconds), "2.00 minutes");
+        }
+
+        #[test]
+        fn format_duration_returns_correct_value_for_hours() {
+            let seconds = 7200.0;
+            assert_eq!(format_duration(seconds), "2.00 hours");
+        }
+
+        #[test]
+        fn format_duration_returns_correct_value_for_days() {
+            let seconds = 172800.0;
+            assert_eq!(format_duration(seconds), "2.00 days");
+        }
+
+        #[test]
+        fn format_duration_returns_correct_value_for_years() {
+            let seconds = 63115200.0;
+            assert_eq!(format_duration(seconds), "2.00 years");
         }
     }
 }

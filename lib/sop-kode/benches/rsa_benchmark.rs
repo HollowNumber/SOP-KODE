@@ -14,7 +14,7 @@ lazy_static! {
 
 const MESSAGE: &str = "This is a test message.";
 
-fn miller_rabin_returns_true_for_prime_number(c: &mut Criterion) {
+fn miller_rabin_returns_true_for_prime_nuamber(c: &mut Criterion) {
     c.bench_function("miller_rabin prime", |b| {
         b.iter(|| {
             let prime = BigUint::from(13u64);

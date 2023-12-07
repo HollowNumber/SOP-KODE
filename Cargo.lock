@@ -6,6 +6,8 @@ version = 3
 name = "SOP-KODE"
 version = "0.1.0"
 dependencies = [
+ "num-bigint",
+ "num-traits",
  "sop_kode",
 ]
 

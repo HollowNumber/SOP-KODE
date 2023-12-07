@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 sop_kode = { path = "lib/sop-kode" }
+
+num-traits = "0.2.17"
+num-bigint = { version = "0.4.4", features = ["rand"] }
