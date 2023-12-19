@@ -1,6 +1,5 @@
 use num_bigint::{BigUint, RandBigInt};
 use num_traits::{FromPrimitive, One, Zero};
-use rand::prelude::*;
 
 /// The `miller_rabin` function is an implementation of the Miller-Rabin primality test.
 /// The Miller-Rabin test is a probabilistic primality test: an algorithm which determines

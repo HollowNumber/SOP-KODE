@@ -1,17 +1,33 @@
 use std::collections::HashMap;
+use std::io::Read;
+use std::fs::File;
+use std::io::Write;
 
-pub use sop_kode::*;
+fn create_files(start: usize, end: usize, step: usize) -> std::io::Result<()> {
+    for i in (start..=end).step_by(step) {
+        let mut file = File::create(format!("lib/sop-kode/benches/text files/file_{}.txt", i))?;
+        let data: String = std::iter::repeat('a').take(i).collect();
+        file.write_all(data.as_bytes())?;
+    }
+    Ok(())
+}
+
+
+
+use sop_kode::*;
 
 fn main() {
-    let plaintext = "Hey bro, this is a test message. I hope you like it!";
-    let rsa = RSA::new(48).unwrap();
-    let encrypted = rsa.encrypt(plaintext);
+    let user: RSA = RSA::new(2048).expect("Failed to create RSA");
+    let mut user2: RSA = RSA::new(2048).expect("Failed to create RSA");
 
-    println!("Encrypted: {:?}", encrypted);
+    let message = "This is a test message.";
 
-    let time = estimate_brute_force_time(&rsa.public_key.n);
-    println!("Estimated time to brute force: {}", format_duration(time));
 
-    let decrypted = rsa.decrypt_message(encrypted);
-    println!("Decrypted: {}", decrypted);
+
+
+    let encrypted_message = user.encrypt_message(message, user2.public_key.clone());
+    let decrypted_message = user2.decrypt_message(encrypted_message.clone());
+    println!("Encrypted message: {:?}", &encrypted_message);
+    println!("Decrypted message: {}", &decrypted_message);
+
 }

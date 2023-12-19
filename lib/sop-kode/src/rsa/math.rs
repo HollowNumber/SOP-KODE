@@ -18,7 +18,7 @@ use num_traits::{One, Zero, Signed, ToPrimitive};
 ///
 /// * A BigInt representing the greatest common divisor (gcd) of `a` and `b`.
 #[inline]
-pub fn binary_extended_gcd(mut a: &BigInt, mut b: &BigInt, x: &mut BigInt, y: &mut BigInt) -> BigInt {
+pub fn binary_extended_gcd(a: &BigInt, b: &BigInt, x: &mut BigInt, y: &mut BigInt) -> BigInt {
     let mut a = a.clone();
     let mut b = b.clone();
     let sign_a = if a.sign() == Sign::Minus { BigInt::from(-1) } else { BigInt::one() };
